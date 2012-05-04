@@ -1,0 +1,37 @@
+# OSX files
+.DS_Store
+
+# we don't want to be versioning logs
+*.log
+
+# for Eclipse
+.classpath
+.project
+.settings/
+
+# for Intellij IDEA
+.idea/
+*.iml
+out/
+
+# populate the db structure, but do not version
+# db/*
+
+# No need to version compiled output
+/bin
+/distribution
+build/*
+
+#LaTeX -- although we allow in doc/figures
+*.pdf
+*.aux
+*.gz
+
+# vim backup files
+*.swp
+
+# temp files
+tmp.file
+
+# build.properties
+build.properties
