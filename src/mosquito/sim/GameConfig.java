@@ -18,6 +18,12 @@ import java.util.Properties;
 import java.util.Random;
 
 public class GameConfig implements Cloneable{
+
+    /**
+     * The maximum max_rounds
+     */
+    public static final int max_rounds_max = 4000;
+
 	public Object clone()
 	{
 		GameConfig r = new GameConfig(this.confFileName);
@@ -35,7 +41,7 @@ public class GameConfig implements Cloneable{
 	int current_round;
 	public int num_mosquitos = 1000;
 	String selectedBoard = null;
-	int max_rounds = -1;
+	int max_rounds = max_rounds_max;
 	private ArrayList<Class<Player>> availablePlayers;
 	private Class<Player> playerClass;
 	public static Random random;
@@ -64,8 +70,6 @@ public class GameConfig implements Cloneable{
 	public void setLights(HashSet<Light> lights) {
 		this.lights = lights;
 	}
-
-	public static final int max_rounds_max = 4000;
 
 	public int getNumLights() {
 		return num_lights;

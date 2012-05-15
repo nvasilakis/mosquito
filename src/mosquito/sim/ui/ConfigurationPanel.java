@@ -55,6 +55,7 @@ public final class ConfigurationPanel extends JPanel implements ChangeListener, 
 
 	private JLabel numAntsLabel;
 	private JSpinner numLightsSpinner;
+    private JSpinner numRoundsSpinner;
 	private JSpinner numMosquitosSpinner;
 	
 	private JList playerList;
@@ -90,7 +91,8 @@ public final class ConfigurationPanel extends JPanel implements ChangeListener, 
 		c.gridwidth = GridBagConstraints.REMAINDER;
 
 		JPanel panel = new JPanel(new FlowLayout());
-		
+
+        // Number of Lights
 		numAntsLabel = new JLabel("Number of Lights: ");
 		numAntsLabel.setFont(config_font);
 		numLightsSpinner = new JSpinner(new SpinnerNumberModel(this.config.getNumLights(), 1, null, 1));
@@ -102,6 +104,23 @@ public final class ConfigurationPanel extends JPanel implements ChangeListener, 
 		panel.add(numLightsSpinner);
 		layout.setConstraints(panel, c);
 		this.add(panel);
+
+
+        // Number of Rounds
+
+        JLabel numRoundsLabel = new JLabel("Number of Rounds: ");
+		numRoundsLabel.setFont(config_font);
+		numRoundsSpinner = new JSpinner(new SpinnerNumberModel(this.config.getMaxRounds(), 1, null, 1));
+		numRoundsSpinner.setPreferredSize(new Dimension(120, 25));
+		numRoundsSpinner.addChangeListener(this);
+
+		panel = new JPanel(new FlowLayout());
+		panel.add(numRoundsLabel);
+		panel.add(numRoundsSpinner);
+		layout.setConstraints(panel, c);
+		this.add(panel);
+
+        // Number of Mosquitoes
 		
 		JLabel label = new JLabel("Number of Mosquitos: ");
 		label.setFont(config_font);
