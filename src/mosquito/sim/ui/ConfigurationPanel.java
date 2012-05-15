@@ -188,6 +188,7 @@ public final class ConfigurationPanel extends JPanel implements ChangeListener, 
 		super.setEnabled(enabled);
 		boardBox.setEnabled(enabled);
 		numMosquitosSpinner.setEnabled(enabled);
+        numRoundsSpinner.setEnabled(enabled);
 		numLightsSpinner.setEnabled(enabled);
 		playerBox.setEnabled(enabled);
 	}
@@ -198,6 +199,8 @@ public final class ConfigurationPanel extends JPanel implements ChangeListener, 
 			config.setMaxRounds(((Integer) ((JSpinner) arg0.getSource()).getValue()).intValue());
 		else if(arg0.getSource().equals(numLightsSpinner))
 			config.setNumLights(((Integer) ((JSpinner) arg0.getSource()).getValue()).intValue());
+        else if(arg0.getSource().equals(numRoundsSpinner))
+			config.setMaxRounds(((Integer) ((JSpinner) arg0.getSource()).getValue()).intValue());
 		else if(arg0.getSource().equals(numMosquitosSpinner))
 			config.setNumMosquitos(((Integer) ((JSpinner) arg0.getSource()).getValue()).intValue());
 		else
