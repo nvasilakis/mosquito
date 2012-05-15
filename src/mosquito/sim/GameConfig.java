@@ -5,6 +5,9 @@
 
 package mosquito.sim;
 
+import org.apache.log4j.Logger;
+
+import javax.swing.*;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
@@ -13,11 +16,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Random;
-
-import javax.swing.ComboBoxModel;
-import javax.swing.DefaultComboBoxModel;
-
-import org.apache.log4j.Logger;
 
 public class GameConfig implements Cloneable{
 	public Object clone()
@@ -110,8 +108,6 @@ public class GameConfig implements Cloneable{
 
 	/**
 	 * Read in configuration file.
-	 * 
-	 * @param file
 	 */
 	public void load() {
 		try {
