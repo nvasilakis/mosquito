@@ -6,41 +6,22 @@
  */
 package mosquito.sim.ui;
 
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.GridLayout;
+import mosquito.sim.GameConfig;
+import mosquito.sim.GameEngine;
+import mosquito.sim.Player;
+
+import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.geom.Point2D;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Iterator;
-
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JSlider;
-import javax.swing.JSpinner;
-import javax.swing.ScrollPaneConstants;
-import javax.swing.SpinnerNumberModel;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-
-import mosquito.sim.GameConfig;
-import mosquito.sim.GameEngine;
-import mosquito.sim.Player;
 
 
 public final class ConfigurationPanel extends JPanel implements ChangeListener, ItemListener, ListSelectionListener
@@ -157,8 +138,7 @@ public final class ConfigurationPanel extends JPanel implements ChangeListener, 
 		generateMosquitosButton = new JButton("Fill Mosquitos");
 		generateMosquitosButton.setVisible(false);
 		generateMosquitosButton.addActionListener(new ActionListener() {
-			
-			@Override
+
 			public void actionPerformed(ActionEvent e) {
 				engine.getBoard().createMosquitos(config.getNumMosquitos());
 				engine.notifyRepaint();
