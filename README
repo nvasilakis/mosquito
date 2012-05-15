@@ -1,1 +1,5 @@
 The Mosquito simulator.
+
+Notes:
+* Main class mosquito.sim.GameEngine
+* Arguments [ mosquito.xml gui ]
