@@ -7,6 +7,7 @@
 package mosquito.sim;
 
 import java.awt.geom.Line2D;
+import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -112,7 +113,7 @@ public final class GameEngine
 	}
 	public boolean step()
 	{
-		if(board.mosquitosCaught >= config.getNumMosquitos()/2 || (config.getMaxRounds() > 0 && getCurrentRound() >= config.getMaxRounds()))
+		if(board.mosquitosCaught >= config.getNumMosquitos() || (config.getMaxRounds() > 0 && getCurrentRound() > config.getMaxRounds()))
 		{
 			//GAME OVER!
 			notifyListeners(GameUpdateType.GAMEOVER);
@@ -120,16 +121,74 @@ public final class GameEngine
 		}
 		try
 		{
+			// remember previous positions of the lights to detect illegal moves
+			int size = board.getLights().size();
+			double xCoords[] = new double[size];
+			double yCoords[] = new double[size];
+			Object[] lightArray = board.getLights().toArray();
+			for (int i = 0; i < lightArray.length; i++) {
+				Light l = (Light)lightArray[i];
+				xCoords[i] = l.getX();
+				yCoords[i] = l.getY();
+			}
+			
+			// update the array of where the mosquitoes are
+			int count[][] = new int[100][100];
+			for (int i = 0; i < 100; i++)
+				for (int j = 0; j < 100; j++)
+					count[i][j] = 0;
+			for (Mosquito m : board.getMosquitos()) {
+				if (!m.caught) {
+					Point2D location = m.location;
+					count[(int)location.getX()][(int)location.getY()]++;
+				}
+			}
+			
+			/* DEBUG */
+			/*
+			for (int j = 0; j < 100; j++) {
+				for (int i = 0; i < 100; i++) {
+					System.err.print(count[i][j] + " ");
+				}
+				System.err.println("||");
+			}
+			*/
+			
+			
+			// ask the Player for the new position of the lights
+			Set<Light> lights = curPlayer.updateLights(count);
+			// make sure there's no monkey business
+			if (lights.size() != size) {
+				System.err.println("ERROR! wrong number of lights!");
+				System.exit(-1);
+			}
+			else {
+				lightArray = lights.toArray();
+				for (int i = 0; i < lights.size(); i++) {
+					Light a = (Light)lightArray[i];
+					if ((Math.abs(a.getX()-xCoords[i]) > 1) || (Math.abs(a.getY() - yCoords[i]) > 1)) {
+						System.err.println("ERROR! light moved by more than one!");
+						System.exit(-1);
+					}
+					
+				}
+			}
+			board.setLights(lights);
+
 			for(Mosquito m : board.getMosquitos())
 			{
 				if(!m.caught)
 				{
 					double d = board.getDirectionOfLight(m.location);
 					m.moveInDirection(d,board.getWalls());
-					if(board.getCollector().contains(m))
-					{
-						m.caught = true;
-						board.mosquitosCaught++;
+					// iterate over all the Collectors
+					for (Collector c : board.getCollectors()) {
+						if(c.contains(m))
+						{
+							m.caught = true;
+							board.mosquitosCaught++;
+							break; // so that a Mosquito can't be caught by two Collectors
+						}
 					}
 				}
 			}
@@ -261,7 +320,7 @@ public final class GameEngine
 						String[] args2 = job.split(";");
 //						System.err.println("Runnign text");
 						GameEngine.lights = null;
-						GameEngine.collector = null;
+						GameEngine.collectors = null;
 						for(int i = 0; i<20;i++)
 						{
 							GameEngine eng = new GameEngine("mosquito.xml");
@@ -393,7 +452,9 @@ public final class GameEngine
 		t.play();
 	}
 	static Set<Light> lights;
-	static Collector collector;
+	static Set<Collector> collectors; 
+
+	
 	public boolean setUpGame()
 	{
 		try
@@ -401,46 +462,78 @@ public final class GameEngine
 			round = 0;
 			board.load(config.getSelectedBoard());
 			board.mosquitosCaught = 0;
-			board.setLights(new HashSet<Light>());
+			board.setLights(new HashSet<Light>()); // TODO: do we need this?
 			
+			initDone = false;
+			curPlayer = config.getPlayerClass().newInstance();
+			curPlayer.setMyConfig((GameConfig) config.clone());
+			curPlayer.setGUI(gui);
+			curPlayer.Register();
+			
+			if(this.isSimulated)
+				curPlayer.startSimulatedGame(board.getWalls(), config.getNumLights()); // TODO
+			else
+				curPlayer.startNewGame(board.getWalls(), config.getNumLights(), config.getNumCollectors());
+			
+			board.createMosquitos(config.getNumMosquitos());
+			board.setInteractive(false);
+
+			// update the array of where the mosquitoes are
+			int count[][] = new int[100][100];
+			for (int i = 0; i < 100; i++)
+				for (int j = 0; j < 100; j++)
+					count[i][j] = 0;
+			for (Mosquito m : board.getMosquitos()) {
+				Point2D location = m.location;
+				count[(int)location.getX()][(int)location.getY()]++;
+			}
+			
+			/* DEBUG */
+			/*
+			for (int j = 0; j < 100; j++) {
+				for (int i = 0; i < 100; i++) {
+					System.err.print(count[i][j] + " ");
+				}
+				System.err.println("||");
+			}
+			*/
+			Set<Light> lights= curPlayer.getLights(count); 
 			if(lights == null)
 			{
-				initDone = false;
-				curPlayer = config.getPlayerClass().newInstance();
-				curPlayer.setMyConfig((GameConfig) config.clone());
-				curPlayer.setGUI(gui);
-				curPlayer.Register();
-				
-				if(this.isSimulated)
-					curPlayer.startSimulatedGame(board.getWalls(), config.getNumLights());
-				else
-					curPlayer.startNewGame(board.getWalls(), config.getNumLights());
+				System.err.println("Error: Player returned null for lights");
+				return false;
 			}
-			else
+			if(lights.size() > config.getNumLights()) 
 			{
-				board.setInteractive(false);
-				Set<Light> lights= GameEngine.lights;
-				if(lights == null)
+				System.err.println("Error: You needed to give "  +config.getNumLights() +", but you gave " + lights.size() + " lights instead!");
+				return false;
+			}
+			for(Light l : lights)
+			{
+				if(l.getX() < 0 || l.getX() > 100 || l.getY() < 0 || l.getY() > 100)
 				{
-					System.err.println("Error: Player returned null for lights");
+					System.err.println("Error: Lights are OOB");
+					System.err.println(l.getX() + ", " + l.getY());
 					return false;
 				}
-				if(lights.size() != config.getNumLights())
-				{
-					System.err.println("Error: You needed to give "  +config.getNumLights() +", but you gave " + lights.size() + " lights instead!");
-					return false;
-				}
-				board.setLights(lights);
-				Collector col = GameEngine.collector;
-				if(col == null)
-				{
-					System.err.println("Error: Collector is null");
-					return false;
-				}
+			}
+			board.setLights(lights);
+
+			Set<Collector> collectors = curPlayer.getCollectors(); 
+			if(collectors == null)
+			{
+				System.err.println("Error: Player returned null for collectors");
+				return false;
+			}
+			if(collectors.size() > config.getNumCollectors()) 
+			{
+				System.err.println("Error: You needed to give "  +config.getNumCollectors() +", but you gave " + collectors.size() + " collectors instead!");
+				return false;
+			}
+			for (Collector col : collectors) {
 				for(Line2D w : board.getWalls())
 				{
-					if(col.intersects(w))
-					{
+					if (col.intersects(w)) {
 						System.err.println("Error: Collector intersects walls");
 						return false;
 					}
@@ -452,99 +545,21 @@ public final class GameEngine
 						System.err.println("Error: Collector intersects light");
 						return false;
 					}
-					if(l.getX() < 0 || l.getX() > 100 || l.getY() < 0 || l.getY() > 100)
-					{
-						System.err.println("Error: Lights are OOB");
-						System.err.println(l.getX() + ", " + l.getY());
-						return false;
-					}
 				}
 				if(col.getX() < 0 || col.getX() > 100 || col.getY() < 0 || col.getY() > 100)
 				{
 					System.err.println("Error: Collector is OOB");
 					return false;
 				}
-				if(!this.isSimulated)
-				{
-					GameEngine.lights = lights;
-					GameEngine.collector = col;
-				}
-				board.setCollector(col);
-				initDone = true;
-				board.createMosquitos(config.getNumMosquitos());
 			}
-			if(lights == null)
-			{
-				board.createMosquitos(0);
-				if(config.getPlayerClass().getName().equals("mosquito.g0.InteractivePlayer"))
-				{
-					System.out.println("Entering interactive mode");
-					board.setInteractive(true);
-				}
-				else
-				{
-					board.setInteractive(false);
-					log.debug("getting lights");
-					Set<Light> lights= curPlayer.getLights();
-					if(lights == null)
-					{
-						System.err.println("Error: Player returned null for lights");
-						return false;
-					}
-					if(lights.size() != config.getNumLights())
-					{
-						System.err.println("Error: You needed to give "  +config.getNumLights() +", but you gave " + lights.size() + " lights instead!");
-						return false;
-					}
-					board.setLights(lights);
-					Collector col = curPlayer.getCollector();
-					if(col == null)
-					{
-						System.err.println("Error: Collector is null");
-						return false;
-					}
-					for(Line2D w : board.getWalls())
-					{
-						if(col.intersects(w))
-						{
-							System.err.println("Error: Collector intersects walls");
-							return false;
-						}
-					}
-					for(Light l : lights)
-					{
-						if(col.contains(l.getLocation()))
-						{
-							System.err.println("Error: Collector intersects light");
-							return false;
-						}
-						if(l.getX() < 0 || l.getX() > 100 || l.getY() < 0 || l.getY() > 100)
-						{
-							System.err.println("Error: Lights are OOB");
-							System.err.println(l.getX() + ", " + l.getY());
-							return false;
-						}
-					}
-					if(col.getX() < 0 || col.getX() > 100 || col.getY() < 0 || col.getY() > 100)
-					{
-						System.err.println("Error: Collector is OOB");
-						return false;
-					}
-					if(!this.isSimulated)
-					{
-						GameEngine.lights = lights;
-						GameEngine.collector = col;
-					}
-					board.setCollector(col);
-					initDone = true;
-					board.createMosquitos(config.getNumMosquitos());
-	//				log.debug("Board created...");
-	//				if(this.isSimulated)
-	//					log.debug("Simulation board");
-	//				else
-	//					log.debug("nonsimulated");
-				}
+			board.setCollectors(collectors); 
+
+			if(!this.isSimulated)
+			{ // TODO: do we still need this?
+				GameEngine.lights = lights;
+				GameEngine.collectors = collectors;
 			}
+			initDone = true;
 		} catch (IOException e)
 		{
 			log.error("Exception: " + e);
@@ -560,6 +575,9 @@ public final class GameEngine
 		notifyListeners(GameUpdateType.STARTING);
 		return true;
 	}
+	
+	
+	
 
 	static Connection conn = null;
 	static void initDB(String filename)

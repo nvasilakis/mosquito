@@ -90,20 +90,25 @@ public abstract class Player {
 	/**
 	 * Called on the player when a new game starts
 	 */
-	public abstract void startNewGame(Set<Line2D> walls,int NumLights);
+	public abstract void startNewGame(Set<Line2D> walls,int numLights, int numCollectors);
 
 	/**
-	 * Returns the set of lights that you would like to place. You must place
-	 * exactly as many lights as numLights
+	 * Returns the set of lights that you would initially like to place. 
 	 * @return Set of lights
 	 */
-	public abstract Set<Light> getLights();
+	public abstract Set<Light> getLights(int[][] board);
 	
+	/**
+	 * Allows you to move the lights 
+	 * @return Set of lights
+	 */
+	public abstract Set<Light> updateLights(int[][] board);
+
 	/**
 	 * Returns the collector that you would like to place
 	 * @return
 	 */
-	public abstract Collector getCollector();
+	public abstract Set<Collector> getCollectors();
 
 }
 

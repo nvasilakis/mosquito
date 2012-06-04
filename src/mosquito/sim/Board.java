@@ -62,7 +62,9 @@ public final class Board {
 	private int lightsHash;
 	public int mosquitosCaught;
 	private int cacheDate = -1;
-	private Collector collector;
+	public int powerUsed = 0;
+
+	private Set<Collector> collectors;
 
 	private double round(double n) {
 		return Math.round(100 * n) / 100;
@@ -122,12 +124,18 @@ public final class Board {
 		return lightStrengthAt(new Point2D.Double(i, j),p2);
 	}
 
-	public void setCollector(Collector collector) {
-		this.collector = collector;
+	public void setCollectors(Set<Collector> collectors) {
+		this.collectors = collectors;
 	}
-
-	public Collector getCollector() {
-		return collector;
+	
+	public Set<Collector> getCollectors() {
+		return collectors;
+	}
+	
+	public void addCollector(Collector c) {
+		if (collectors == null) 
+			collectors = new HashSet<Collector>();
+		collectors.add(c);
 	}
 
 	public boolean lightsChanged() {
@@ -302,8 +310,8 @@ public final class Board {
 	}
 	
 	
-	Set<Line2D> walls;
-
+	public static Set<Line2D> walls;
+	
 	public Set<Light> getLights() {
 		return lights;
 	}
@@ -444,7 +452,7 @@ public final class Board {
 	}
 
 	private void init() {
-
+		powerUsed = 0;
 	}
 
 	public boolean inBounds(int x, int y) {

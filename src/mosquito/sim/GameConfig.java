@@ -5,9 +5,6 @@
 
 package mosquito.sim;
 
-import org.apache.log4j.Logger;
-
-import javax.swing.*;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
@@ -17,17 +14,17 @@ import java.util.HashSet;
 import java.util.Properties;
 import java.util.Random;
 
+import javax.swing.ComboBoxModel;
+import javax.swing.DefaultComboBoxModel;
+
+import org.apache.log4j.Logger;
+
 public class GameConfig implements Cloneable{
-
-    /**
-     * The maximum max_rounds
-     */
-    public static final int max_rounds_max = 4000;
-
 	public Object clone()
 	{
 		GameConfig r = new GameConfig(this.confFileName);
 		r.num_lights = this.num_lights;
+		r.num_collectors = this.num_collectors;
 		r.num_mosquitos = this.num_mosquitos;
 		r.number_of_rounds = this.number_of_rounds;
 		r.max_rounds = this.max_rounds;
@@ -51,6 +48,7 @@ public class GameConfig implements Cloneable{
 	private Logger log = Logger.getLogger(this.getClass());
 	private File boardFile;
 	int num_lights = 5;
+	int num_collectors = 1;
 
 	public Class<Player> getPlayerClass() {
 		return playerClass;
@@ -71,6 +69,8 @@ public class GameConfig implements Cloneable{
 		this.lights = lights;
 	}
 
+	public static final int max_rounds_max = 5000;
+
 	public int getNumLights() {
 		return num_lights;
 	}
@@ -78,6 +78,15 @@ public class GameConfig implements Cloneable{
 	public void setNumLights(int num_lights) {
 		this.num_lights = num_lights;
 	}
+	
+	public int getNumCollectors() {
+		return num_collectors;
+	}
+
+	public void setNumCollectors(int num_collectors) {
+		this.num_collectors = num_collectors;
+	}
+	
 
 	public void setSelectedBoard(File f) {
 		boardFile = f;
@@ -112,6 +121,8 @@ public class GameConfig implements Cloneable{
 
 	/**
 	 * Read in configuration file.
+	 * 
+	 * @param file
 	 */
 	public void load() {
 		try {

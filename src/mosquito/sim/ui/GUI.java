@@ -39,11 +39,13 @@ import mosquito.sim.GameListener;
 //import colony.Tournament.TournamentResult;
 /**
  * 
- * @author Cieslewicz
+ * @author Chris Murphy
  * 
  */
 public final class GUI extends JFrame implements ActionListener, GameListener, ChangeListener
 {
+	private final static String VERSION = "2.1";
+	
 	private GameEngine engine;
 	private static final long serialVersionUID = 1L;
 
@@ -90,7 +92,7 @@ public final class GUI extends JFrame implements ActionListener, GameListener, C
 //		boardScroller.getViewport().add(boardPanel);
 		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setTitle("CIS 700 Summer 2012 - Mosquito");
+		setTitle("CIS 700 Summer 2012 - Mosquito " + VERSION);
 		setName("GUI");
 		setPreferredSize(new Dimension(1000, 850));
 		setMinimumSize(new Dimension(500, 500));
@@ -322,7 +324,10 @@ public final class GUI extends JFrame implements ActionListener, GameListener, C
 				controlPanel.begin.setEnabled(true);
 				controlPanel.tournament.setEnabled(true);
 				configPanel.setEnabled(true);
-				String s = "Achieved 50% capture at t=" + (engine.getCurrentRound()-1);
+				int caught = engine.getBoard().mosquitosCaught;
+				int total = engine.getConfig().getNumMosquitos();
+				double percent = 100.0*caught/total;
+				String s = "Caught " + percent + "% at t=" + (engine.getCurrentRound()-1) + "; power used=" + engine.getBoard().powerUsed;
 				JOptionPane.showMessageDialog((Frame) c, s, "Game Over", JOptionPane.INFORMATION_MESSAGE);
 			}
 			break;

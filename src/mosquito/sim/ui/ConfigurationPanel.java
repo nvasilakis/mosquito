@@ -6,22 +6,41 @@
  */
 package mosquito.sim.ui;
 
-import mosquito.sim.GameConfig;
-import mosquito.sim.GameEngine;
-import mosquito.sim.Player;
-
-import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import java.awt.*;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.geom.Point2D;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Iterator;
+
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSlider;
+import javax.swing.JSpinner;
+import javax.swing.ScrollPaneConstants;
+import javax.swing.SpinnerNumberModel;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+
+import mosquito.sim.GameConfig;
+import mosquito.sim.GameEngine;
+import mosquito.sim.Player;
 
 
 public final class ConfigurationPanel extends JPanel implements ChangeListener, ItemListener, ListSelectionListener
@@ -34,10 +53,13 @@ public final class ConfigurationPanel extends JPanel implements ChangeListener, 
 	private JLabel roundLabel;
 	private JSpinner roundSpinner;
 
-	private JLabel numAntsLabel;
+	private JLabel numLightsLabel;
 	private JSpinner numLightsSpinner;
-    private JSpinner numRoundsSpinner;
+	private JLabel numCollectorsLabel;
+	private JSpinner numCollectorsSpinner;
+	private JLabel numMosquitosLabel;
 	private JSpinner numMosquitosSpinner;
+	private JSpinner numRoundsSpinner;
 	
 	private JList playerList;
 	private JLabel score;
@@ -72,24 +94,32 @@ public final class ConfigurationPanel extends JPanel implements ChangeListener, 
 		c.gridwidth = GridBagConstraints.REMAINDER;
 
 		JPanel panel = new JPanel(new FlowLayout());
-
-        // Number of Lights
-		numAntsLabel = new JLabel("Number of Lights: ");
-		numAntsLabel.setFont(config_font);
+		
+		numLightsLabel = new JLabel("Number of Lights: ");
+		numLightsLabel.setFont(config_font);
 		numLightsSpinner = new JSpinner(new SpinnerNumberModel(this.config.getNumLights(), 1, null, 1));
 		numLightsSpinner.setPreferredSize(new Dimension(120, 25));
 		numLightsSpinner.addChangeListener(this);	
 
 		panel = new JPanel(new FlowLayout());
-		panel.add(numAntsLabel);
+		panel.add(numLightsLabel);
 		panel.add(numLightsSpinner);
 		layout.setConstraints(panel, c);
 		this.add(panel);
 
+		numCollectorsLabel = new JLabel("Number of Collectors: ");
+		numCollectorsLabel.setFont(config_font);
+		numCollectorsSpinner = new JSpinner(new SpinnerNumberModel(this.config.getNumCollectors(), 1, null, 1));
+		numCollectorsSpinner.setPreferredSize(new Dimension(120, 25));
+		numCollectorsSpinner.addChangeListener(this);	
 
-        // Number of Rounds
+		panel = new JPanel(new FlowLayout());
+		panel.add(numCollectorsLabel);
+		panel.add(numCollectorsSpinner);
+		layout.setConstraints(panel, c);
+		this.add(panel);
 
-        JLabel numRoundsLabel = new JLabel("Number of Rounds: ");
+        JLabel numRoundsLabel = new JLabel("Maximum Number of Rounds: ");
 		numRoundsLabel.setFont(config_font);
 		numRoundsSpinner = new JSpinner(new SpinnerNumberModel(this.config.getMaxRounds(), 1, null, 1));
 		numRoundsSpinner.setPreferredSize(new Dimension(120, 25));
@@ -99,18 +129,16 @@ public final class ConfigurationPanel extends JPanel implements ChangeListener, 
 		panel.add(numRoundsLabel);
 		panel.add(numRoundsSpinner);
 		layout.setConstraints(panel, c);
-		this.add(panel);
-
-        // Number of Mosquitoes
+		this.add(panel);				
 		
-		JLabel label = new JLabel("Number of Mosquitos: ");
-		label.setFont(config_font);
+		numMosquitosLabel = new JLabel("Number of Mosquitos: ");
+		numMosquitosLabel.setFont(config_font);
 		numMosquitosSpinner = new JSpinner(new SpinnerNumberModel(this.config.getNumMosquitos(), 1, null, 1));
 		numMosquitosSpinner.setPreferredSize(new Dimension(120, 25));
 		numMosquitosSpinner.addChangeListener(this);	
 
 		panel = new JPanel(new FlowLayout());
-		panel.add(label);
+		panel.add(numMosquitosLabel);
 		panel.add(numMosquitosSpinner);
 		score = new JLabel("Score: N/A");
 		panel.add(score);
@@ -138,7 +166,8 @@ public final class ConfigurationPanel extends JPanel implements ChangeListener, 
 		generateMosquitosButton = new JButton("Fill Mosquitos");
 		generateMosquitosButton.setVisible(false);
 		generateMosquitosButton.addActionListener(new ActionListener() {
-
+			
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				engine.getBoard().createMosquitos(config.getNumMosquitos());
 				engine.notifyRepaint();
@@ -188,8 +217,9 @@ public final class ConfigurationPanel extends JPanel implements ChangeListener, 
 		super.setEnabled(enabled);
 		boardBox.setEnabled(enabled);
 		numMosquitosSpinner.setEnabled(enabled);
-        numRoundsSpinner.setEnabled(enabled);
+		numRoundsSpinner.setEnabled(enabled);
 		numLightsSpinner.setEnabled(enabled);
+		numCollectorsSpinner.setEnabled(enabled);
 		playerBox.setEnabled(enabled);
 	}
 
@@ -199,7 +229,9 @@ public final class ConfigurationPanel extends JPanel implements ChangeListener, 
 			config.setMaxRounds(((Integer) ((JSpinner) arg0.getSource()).getValue()).intValue());
 		else if(arg0.getSource().equals(numLightsSpinner))
 			config.setNumLights(((Integer) ((JSpinner) arg0.getSource()).getValue()).intValue());
-        else if(arg0.getSource().equals(numRoundsSpinner))
+		else if(arg0.getSource().equals(numCollectorsSpinner))
+			config.setNumCollectors(((Integer) ((JSpinner) arg0.getSource()).getValue()).intValue());
+		else if(arg0.getSource().equals(numRoundsSpinner))
 			config.setMaxRounds(((Integer) ((JSpinner) arg0.getSource()).getValue()).intValue());
 		else if(arg0.getSource().equals(numMosquitosSpinner))
 			config.setNumMosquitos(((Integer) ((JSpinner) arg0.getSource()).getValue()).intValue());

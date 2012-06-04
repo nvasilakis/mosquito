@@ -41,6 +41,8 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
+import org.apache.log4j.Logger;
+
 public final class BoardPanel extends JPanel implements MouseListener,
 		MouseMotionListener {
 	/**
@@ -184,6 +186,7 @@ public final class BoardPanel extends JPanel implements MouseListener,
 		return blobs;
 	}
 
+	
 	public void paint(Graphics g) {
 		super.paint(g);
 		
@@ -201,6 +204,7 @@ public final class BoardPanel extends JPanel implements MouseListener,
 			for (Light l : board.getLights()) {
 				g2D.setColor(Color.YELLOW);
 				if (l.isOn(engine.getCurrentRound())) {
+					board.powerUsed++;
 					g2D.drawOval((int) Board.toScreenSpace(l.getX() - 20),
 							(int) Board.toScreenSpace(l.getY() - 20),
 							(int) Board.toScreenSpace(40),
@@ -230,15 +234,18 @@ public final class BoardPanel extends JPanel implements MouseListener,
 			}
 
 		}
-		if (engine != null && board.getCollector() != null) {
-			g2D.setColor(Color.GREEN);
-			g2D.fillOval(
-					(int) Board.toScreenSpace(board.getCollector().getX()
-							- Collector.DIAMETER / 2),
-					(int) Board.toScreenSpace(board.getCollector().getY()
-							- Collector.DIAMETER / 2),
-					(int) Board.toScreenSpace(Collector.DIAMETER),
-					(int) Board.toScreenSpace(Collector.DIAMETER));
+		if (engine != null && board.getCollectors() != null) {
+			for (Collector c : board.getCollectors()) {
+				g2D.setColor(Color.GREEN);
+				g2D.fillOval(
+						(int) Board.toScreenSpace(c.getX()
+								- Collector.DIAMETER / 2),
+						(int) Board.toScreenSpace(c.getY()
+								- Collector.DIAMETER / 2),
+						(int) Board.toScreenSpace(Collector.DIAMETER),
+						(int) Board.toScreenSpace(Collector.DIAMETER));
+				
+			}
 		}
 		
 		if (board != null)
@@ -363,7 +370,7 @@ public final class BoardPanel extends JPanel implements MouseListener,
 			if (e.isControlDown() && e.isAltDown()) {
 				Collector c = new Collector(Board.fromScreenSpace(e.getX()),
 						Board.fromScreenSpace(e.getY()));
-				board.setCollector(c);
+				board.addCollector(c);
 			} else if (e.isAltDown()) {
 				if (e.isShiftDown()) {
 					for (int i = 0; i < 100; i++) {
